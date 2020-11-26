@@ -131,6 +131,8 @@ Examples:
 ;;                 7 h 8 9 n))
 ;;   (insert (ftable-box-char code (cdadr ftable-box-charset-alist))))
 
+(define-error 'ftable-parse-error "Error parsing table")
+
 (cl-defmethod ftable--parse-to ((table-type (eql ftable)) text
                                 &optional box-charset)
   "Parse TEXT into a table of TABLE-TYPE.
@@ -166,6 +168,9 @@ It defaults to the first charset."
                  (setq buffer nil))
         (push (ftable--tokenize-line line charset) buffer)))
     (setq matrix (reverse matrix))
+    ;; Sanity check.
+    (when (not (ftable--check-dimension matrix))
+      (signal 'ftable-parse-error '("Dimension mismatch")))
     ;; MATRIX:
     ;; ((("ab" "c")) (("de" "f") ("gh" "i")))
     ;;
@@ -183,6 +188,17 @@ It defaults to the first charset."
      (ftable--min-column-width matrix)
      :matrix matrix)))
 
+(defun ftable--check-dimension (matrix)
+  "Check that the dimension of MATRIX is correct.
+Correct dimension means each row has the same number of columns.
+Return t if the dimension is correct, nil if not."
+  (let* ((matrix (apply #'append matrix))
+         (first-row-column-count (length (car matrix))))
+    (cl-loop for row in (cdr matrix)
+             if (not (eq first-row-column-count (length row)))
+             return nil
+             finally return t)))
+
 (defun ftable--tokenize-line (text-line box-charset)
   "Tokenize TEXT-LINE into a list of tokens.
 
@@ -194,8 +210,6 @@ BOX-CHARSET is the same as in `ftable--parse-to'.
 
 Assumes each line begines with box drawing characters, i.e., no
 white space characters."
-  (cl-assert (string-prefix-p (ftable-box-char 'v box-charset) text-line)
-             t "TEXT-LINE doesn’t begin with box drawing char")
   (mapcar #'string-trim
           (split-string (string-trim
                          text-line
