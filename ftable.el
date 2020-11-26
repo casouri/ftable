@@ -550,10 +550,10 @@ position of the table, not including any newlines. TABLEP is t if
 point is on a table, nil if not. CHARSET is the box drawing
 charset used by the table (if there is a table).
 \(See `ftable-box-charset-alist'.)"
-  (let* ((beg (save-excursion (forward-paragraph -1)
+  (let* ((beg (save-excursion (search-backward "\n\n" nil t)
                               (skip-chars-forward "\n")
                               (point)))
-         (end (save-excursion (forward-paragraph 1)
+         (end (save-excursion (search-forward "\n\n" nil t)
                               (skip-chars-backward "\n")
                               (point)))
          (text (buffer-substring-no-properties
