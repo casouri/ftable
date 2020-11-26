@@ -616,7 +616,7 @@ charset used by the table (if there is a table).
                            '( "│ab│c│" "│de│f│" "│gh│i│"))
                    '(("ab" "c") ("de" "f") ("gh" "i") )))
     (should (equal (ftable--tokenize-line
-                    "|fgh|  | z|" (cdadr ftable-box-charset-alist))
+                    "|fgh|  | z|" (cdar ftable-box-charset-alist))
                    '("fgh" "" "z")))
     ;; ftable--merge-lines
     (should (equal (mapcar #'ftable--merge-lines
