@@ -22,7 +22,7 @@
 ;; with compound cells (cells that span multiple rows/columns) because
 ;; they are more complicated to handle. If the need arises in the
 ;; future (unlikely), I might improve ftable to handle more complex
-;; tables. Also, after filling, any manual line breaks in a cell is
+;; tables. Also, after filling, any manual line-break in a cell is
 ;; discarded.
 ;;
 ;; Customization:
@@ -38,8 +38,20 @@
 
 ;;; Customization
 
-(defvar-local ftable-fill-column fill-column
-  "Basically `fill-column' for fill-table.")
+(defgroup ftable
+  '((ftable-fill-column custom-variable)
+    (ftable-recognize-table custom-variable))
+  "Fill (auto-layout) tables."
+  :group 'text)
+
+(defcustom ftable-fill-column fill-column
+  "Basically `fill-column' for fill-table."
+  :local t
+  :type 'number)
+
+(defcustom ftable-recognize-table nil
+  "When non-nil, ftable calls `table-recognize' on the table."
+  :type 'boolean)
 
 ;;; Table structure
 

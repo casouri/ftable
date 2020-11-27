@@ -16,7 +16,7 @@ Commands provided:
 
 - ftable-edit-cell :: Edit the cell at point
 
-There are some limitations. Currently ftable doesn’t support tables with compound cells (cells that span multiple rows/columns) because they are more complicated to handle. If the need arises in the future (unlikely), I might improve ftable to handle more complex tables. Also, after filling, any manual line breaks in a cell is discarded.
+There are some limitations. Currently ftable doesn’t support tables with compound cells (cells that span multiple rows/columns) because they are more complicated to handle. If the need arises in the future (unlikely), I might improve ftable to handle more complex tables. Also, after filling, any manual line-break in a cell is discarded.
 
 * Customization
 
