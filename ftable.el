@@ -49,6 +49,10 @@
   :local t
   :type 'number)
 
+;; KLUDGE: There seems to be a bug preventing ftable-fill-column to be
+;; set. (#44911)
+(setq ftable-fill-column fill-column)
+
 ;;; Table structure
 
 (cl-defstruct ftable
