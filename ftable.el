@@ -45,7 +45,7 @@
   :group 'text)
 
 (defcustom ftable-fill-column fill-column
-  "Basically `fill-column' for fill-table."
+  "Basically `fill-column' for ftable."
   :local t
   :type 'number)
 
@@ -513,7 +513,7 @@ Return a new string."
   (interactive)
   (pcase-let* ((pt (point))
                (p-column (- (point) (line-beginning-position)))
-               (`(,text ,beg ,end cell-p,tablep ,charset)
+               (`(,text ,beg ,end ,cell-p,tablep ,charset)
                 (ftable--table-info))
                (x -1)
                ;; If these two characters are the same, we will count
