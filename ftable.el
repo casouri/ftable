@@ -189,7 +189,7 @@ It defaults to the first charset."
     (make-ftable
      :column-width-list
      (mapcar (lambda (column)
-               (apply #'max (mapcar #'length column)))
+               (apply #'max (mapcar #'string-width column)))
              (cl-loop for n from 0 to (1- (length (car matrix)))
                       collect (ftable--nth-column n matrix)))
      :min-width-list
@@ -263,7 +263,6 @@ Assumes each line in LINE-LIST has the same length."
                          (ftable--max-line-width))))
             (cl-loop for col from 0 to (1- (length (car matrix)))
                      collect (ftable--nth-column col matrix)))))
-
 
 ;;; Fill
 
@@ -365,7 +364,7 @@ Return a new table with shrinked column."
 (defun ftable--max-line-width ()
   "Return the maximum line width in buffer."
   (apply #'max
-         (mapcar #'length
+         (mapcar #'string-width
                  (split-string (buffer-string) "\n"))))
 
 ;;; Unparse
@@ -485,8 +484,8 @@ which corresponds to
 (defun ftable--pad-to (text width)
   "Append padding to TEXT until it is WIDTH characters long.
 Return a new string."
-  (if (< (length text) width)
-      (concat text (make-vector (- width (length text)) ?\s))
+  (if (< (string-width text) width)
+      (concat text (make-vector (- width (string-width text)) ?\s))
     text))
 
 ;;; Convenience
