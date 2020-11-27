@@ -49,10 +49,6 @@
   :local t
   :type 'number)
 
-(defcustom ftable-recognize-table nil
-  "When non-nil, ftable calls `table-recognize' on the table."
-  :type 'boolean)
-
 ;;; Table structure
 
 (cl-defstruct ftable
@@ -498,7 +494,7 @@ Return a new string."
 (defun ftable-fill ()
   "Fill the table (or paragraph) at point."
   (interactive)
-  (pcase-let ((`(,text ,beg ,end ,tablep , charset)
+  (pcase-let ((`(,text ,beg ,end ,cell-p ,tablep , charset)
                (ftable--table-info)))
     (if tablep
         (ftable--replace-text
@@ -508,7 +504,9 @@ Return a new string."
            (ftable--fill (ftable--parse-to
                           'ftable text charset)
                          ftable-fill-column)
-           charset)))
+           charset))
+         (when cell-p
+           #'table-recognize-region))
       (fill-paragraph))))
 
 (defun ftable-edit-cell ()
@@ -516,7 +514,8 @@ Return a new string."
   (interactive)
   (pcase-let* ((pt (point))
                (p-column (- (point) (line-beginning-position)))
-               (`(,text ,beg ,end ,tablep ,charset) (ftable--table-info))
+               (`(,text ,beg ,end cell-p,tablep ,charset)
+                (ftable--table-info))
                (x -1)
                ;; If these two characters are the same, we will count
                ;; one extra.
@@ -546,7 +545,9 @@ Return a new string."
          beg end text
          (ftable--unparse
           (ftable--fill table ftable-fill-column)
-          charset))))))
+          charset)
+         (when cell-p
+           #'table-recognize-region))))))
 
 (defun ftable-reformat (style)
   "Change box drawing STYLE for table at point.
@@ -555,7 +556,7 @@ STYLE can be ’ascii or ’unicode."
                       (downcase
                        (completing-read "Style: "
                                         '("ASCII" "Unicode"))))))
-  (pcase-let ((`(,text ,beg ,end ,tablep ,charset)
+  (pcase-let ((`(,text ,beg ,end ,cell-p ,tablep ,charset)
                (ftable--table-info)))
     (if (not tablep)
         (user-error "There is no table at point")
@@ -567,15 +568,18 @@ STYLE can be ’ascii or ’unicode."
         (ftable--fill
          (ftable--parse-to 'ftable text charset)
          ftable-fill-column)
-        (alist-get style ftable-box-charset-alist))))))
+        (alist-get style ftable-box-charset-alist))
+       (when cell-p
+         #'table-recognize-region)))))
 
 (defun ftable--table-info ()
-  "Return (TEXT BEG END TABLEP CHARSET) for the table at point.
+  "Return (TEXT BEG END TABLE-CELL-P TABLEP CHARSET).
 TEXT is the table’s text. BEG and END are the beginning and end
-position of the table, not including any newlines. TABLEP is t if
-point is on a table, nil if not. CHARSET is the box drawing
-charset used by the table (if there is a table).
-\(See `ftable-box-charset-alist'.)"
+position of the table, not including any newlines. TABLE-CELL-P
+is t if the table is managed by table.el. TABLEP is t if point is
+on a table, nil if not. CHARSET is the box drawing charset used
+by the table (if there is a table). \(See
+`ftable-box-charset-alist'.)"
   (let* ((beg (save-excursion (if (not (search-backward "\n\n" nil t))
                                   (point-min))
                               (skip-chars-forward "\n")
@@ -584,9 +588,9 @@ charset used by the table (if there is a table).
                                   (point-max)
                                 (skip-chars-backward "\n")
                                 (point))))
-         (text (buffer-substring-no-properties
-                beg end)))
-    (append (list text beg end)
+         (text (buffer-substring-no-properties beg end))
+         (table-cell-p (text-property-any beg end 'table-cell t)))
+    (append (list text beg end table-cell-p)
             (cl-loop for charset
                      in (mapcar #'cdr ftable-box-charset-alist)
                      if (equal (substring text 0 1)
@@ -594,14 +598,18 @@ charset used by the table (if there is a table).
                      return (list t charset)
                      finally return (list nil nil)))))
 
-(defun ftable--replace-text (beg end text new-text)
-  "Replace TEXT between BEG and END with NEW-TEXT."
+(defun ftable--replace-text (beg end text new-text &optional fn)
+  "Replace TEXT between BEG and END with NEW-TEXT.
+If FN non-nil, run it with the new BEG and END after replacing
+the text. I.e., (FN BEG END)."
   (unless (equal text new-text)
     (let ((p (point)))
       (delete-region beg end)
       (insert new-text)
+      (setq end (point))
       ;; Go back to roughly where we were.
-      (goto-char p))))
+      (goto-char p)
+      (when fn (funcall fn beg end)))))
 
 ;;; Test
 
