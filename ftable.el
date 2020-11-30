@@ -575,6 +575,46 @@ STYLE can be ’ascii or ’unicode."
        (when cell-p
          #'table-recognize-region)))))
 
+(defun ftable--at-table-p ()
+  "Return non-nil if point is in a table."
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-forward " \t")
+    (member (char-to-string (char-after))
+            (append
+             (cl-loop for elt in ftable-box-charset-alist
+                      for charset = (cdr elt)
+                      collect (valign-box-char 1 charset)
+                      collect (valign-box-char 4 charset)
+                      collect (valign-box-char 7 charset)
+                      collect (valign-box-char 'v charset))))))
+
+(defun ftable--beginning-of-table ()
+  "Go backward to the beginning of the table at point.
+Assumes point is on a table."
+  ;; This implementation allows non-table lines before a table, e.g.,
+  ;; #+latex: xxx
+  ;; |------+----|
+  (beginning-of-line)
+  (while (and (< (point-min) (point))
+              (ftable--at-table-p))
+    (forward-line -1))
+  (unless (valign--at-table-p)
+    (forward-line 1)))
+
+(defun ftable--end-of-table ()
+  "Go forward to the end of the table at point.
+Assumes point is on a table."
+  (let ((start (point)))
+    (beginning-of-line)
+    (while (and (< (point) (point-max))
+                (ftable--at-table-p))
+      (forward-line 1))
+    (unless (<= (point) start)
+      (skip-chars-backward "\n"))
+    (when (< (point) start)
+      (error "End of table goes backwards"))))
+
 (defun ftable--table-info ()
   "Return (TEXT BEG END TABLE-CELL-P TABLEP CHARSET).
 TEXT is the table’s text. BEG and END are the beginning and end
@@ -583,14 +623,12 @@ is t if the table is managed by table.el. TABLEP is t if point is
 on a table, nil if not. CHARSET is the box drawing charset used
 by the table (if there is a table). \(See
 `ftable-box-charset-alist'.)"
-  (let* ((beg (save-excursion (if (not (search-backward "\n\n" nil t))
-                                  (point-min))
-                              (skip-chars-forward "\n")
-                              (point)))
-         (end (save-excursion (if (not (search-forward "\n\n" nil t))
-                                  (point-max)
-                                (skip-chars-backward "\n")
-                                (point))))
+  (let* ((beg (save-excursion
+                (ftable--beginning-of-table)
+                (point)))
+         (end (save-excursion
+                (ftable--end-of-table)
+                (point)))
          (text (buffer-substring-no-properties beg end))
          (table-cell-p (text-property-any beg end 'table-cell t)))
     (append (list text beg end table-cell-p)
