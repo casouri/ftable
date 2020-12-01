@@ -595,7 +595,8 @@ Assumes point is on a table."
   ;; This implementation allows non-table lines before a table, e.g.,
   ;; #+latex: xxx
   ;; |------+----|
-  (beginning-of-line)
+  (when (ftable--at-table-p)
+    (beginning-of-line))
   (while (and (< (point-min) (point))
               (ftable--at-table-p))
     (forward-line -1))
@@ -606,7 +607,8 @@ Assumes point is on a table."
   "Go forward to the end of the table at point.
 Assumes point is on a table."
   (let ((start (point)))
-    (beginning-of-line)
+    (when (ftable--at-table-p)
+      (beginning-of-line))
     (while (and (< (point) (point-max))
                 (ftable--at-table-p))
       (forward-line 1))
