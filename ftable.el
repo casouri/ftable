@@ -584,10 +584,10 @@ STYLE can be ’ascii or ’unicode."
             (append
              (cl-loop for elt in ftable-box-charset-alist
                       for charset = (cdr elt)
-                      collect (valign-box-char 1 charset)
-                      collect (valign-box-char 4 charset)
-                      collect (valign-box-char 7 charset)
-                      collect (valign-box-char 'v charset))))))
+                      collect (ftable-box-char 1 charset)
+                      collect (ftable-box-char 4 charset)
+                      collect (ftable-box-char 7 charset)
+                      collect (ftable-box-char 'v charset))))))
 
 (defun ftable--beginning-of-table ()
   "Go backward to the beginning of the table at point.
@@ -600,7 +600,7 @@ Assumes point is on a table."
   (while (and (< (point-min) (point))
               (ftable--at-table-p))
     (forward-line -1))
-  (unless (valign--at-table-p)
+  (unless (ftable--at-table-p)
     (forward-line 1)))
 
 (defun ftable--end-of-table ()
