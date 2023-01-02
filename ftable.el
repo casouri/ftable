@@ -5,7 +5,7 @@
 ;; Author: Yuan Fu <casouri@gmail.com>
 ;; Maintainer: Yuan Fu <casouri@gmail.com>
 ;; URL: https://github.com/casouri/ftable
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: convenience, text, table
 ;; Package-Requires: ((emacs "26.0"))
 
