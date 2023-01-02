@@ -1,5 +1,7 @@
 #+TITLE: ftable.el
 
+[[https://elpa.gnu.org/packages/ftable.html][https://elpa.gnu.org/packages/ftable.svg]]
+
 This package provides some convenient commands for filling a table, i.e., adjusting the layout of the table so it can fit in n columns.
 
 [[./ftable.gif]]
